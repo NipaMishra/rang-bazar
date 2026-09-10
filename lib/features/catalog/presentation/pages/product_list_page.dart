@@ -7,10 +7,12 @@ import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/category_style.dart';
 import '../../../../core/utils/error_message.dart';
+import '../../../../core/widgets/app_fade_in.dart';
 import '../../../../core/widgets/cart_icon_button.dart';
 import '../../../../core/widgets/catalog_cards.dart';
 import '../../../../core/widgets/feedback_views.dart';
 import '../../../../core/widgets/shimmer_box.dart';
+import '../../../../core/widgets/soft_icon_button.dart';
 import '../../domain/models/product.dart';
 import '../providers/catalog_providers.dart';
 
@@ -39,6 +41,22 @@ class ProductListPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.only(left: AppSpacing.sm),
+          child: SoftIconButton(
+            icon: Icons.arrow_back_ios_new_rounded,
+            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+            size: 42,
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+                return;
+              }
+              context.go(AppRoutes.home);
+            },
+          ),
+        ),
+        leadingWidth: 66,
         title: Text(title),
         actions: const <Widget>[CartIconButton()],
       ),
@@ -59,7 +77,7 @@ class ProductListPage extends ConsumerWidget {
                     return ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: const <Widget>[
-                        SizedBox(height: 120),
+                        SizedBox(height: 100),
                         EmptyView(
                           title: AppStrings.emptyProductsTitle,
                           message: AppStrings.emptyProductsMessage,
@@ -69,20 +87,29 @@ class ProductListPage extends ConsumerWidget {
                   }
                   return GridView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(AppSpacing.page),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.page,
+                      AppSpacing.xs,
+                      AppSpacing.page,
+                      AppSpacing.lg,
+                    ),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: columns,
                       mainAxisSpacing: AppSpacing.md,
                       crossAxisSpacing: AppSpacing.md,
-                      childAspectRatio: 0.78,
+                      childAspectRatio: 0.72,
                     ),
                     itemCount: items.length,
                     itemBuilder: (BuildContext context, int index) {
                       final Product product = items[index];
-                      return ProductCard(
-                        product: product,
-                        onTap: () =>
-                            context.push(AppRoutes.productDetails(product.id)),
+                      return AppFadeIn.staggered(
+                        index: index,
+                        child: ProductCard(
+                          product: product,
+                          onTap: () => context.push(
+                            AppRoutes.productDetails(product.id),
+                          ),
+                        ),
                       );
                     },
                   );
@@ -92,7 +119,7 @@ class ProductListPage extends ConsumerWidget {
                   return ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: <Widget>[
-                      SizedBox(height: constraints.maxHeight * 0.15),
+                      SizedBox(height: constraints.maxHeight * 0.12),
                       ErrorView(
                         message: userFacingError(error),
                         onRetry: () =>

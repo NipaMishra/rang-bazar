@@ -6,14 +6,18 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/error_message.dart';
+import '../../../../core/widgets/app_fade_in.dart';
 import '../../../../core/widgets/catalog_cards.dart';
 import '../../../../core/widgets/category_chip.dart';
 import '../../../../core/widgets/feedback_views.dart';
 import '../../../../core/widgets/promo_carousel.dart';
+import '../../../../core/widgets/search_field.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../core/widgets/shimmer_box.dart';
 import '../../../../core/widgets/shop_bottom_nav.dart';
 import '../../../../core/widgets/shop_scaffold.dart';
+import '../../../../core/widgets/soft_icon_button.dart';
+import '../../../cart/presentation/widgets/cart_strap.dart';
 import '../../domain/models/category.dart';
 import '../../domain/models/product.dart';
 import '../providers/catalog_providers.dart';
@@ -28,6 +32,7 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   final TextEditingController _search = TextEditingController();
   String? _selectedCategory;
+  String _query = '';
 
   @override
   void dispose() {
@@ -36,7 +41,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   List<Product> _visibleProducts(List<Product> products) {
-    final String query = _search.text.trim().toLowerCase();
+    final String query = _query.trim().toLowerCase();
     return products
         .where((Product product) {
           final bool matchesCategory =
@@ -49,6 +54,22 @@ class _HomePageState extends ConsumerState<HomePage> {
         .toList(growable: false);
   }
 
+  void _soon(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _openSeeAll(AsyncValue<List<Category>> categories) {
+    String? slug = _selectedCategory;
+    if (slug == null) {
+      final List<Category>? items = categories.asData?.value;
+      if (items == null || items.isEmpty) return;
+      slug = items.first.slug;
+    }
+    context.push(AppRoutes.productList(slug));
+  }
+
   @override
   Widget build(BuildContext context) {
     final AsyncValue<List<Category>> categories = ref.watch(categoriesProvider);
@@ -56,6 +77,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return ShopScaffold(
       current: ShopTab.home,
+      footer: const CartStrap(),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -86,163 +108,132 @@ class _HomePageState extends ConsumerState<HomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Builder(
-                                builder: (BuildContext context) {
-                                  return IconButton(
-                                    tooltip: AppStrings.menuTooltip,
-                                    onPressed: () =>
-                                        Scaffold.of(context).openDrawer(),
-                                    icon: const Icon(Icons.menu_rounded),
-                                  );
-                                },
-                              ),
-                              Expanded(
-                                child: TextField(
-                                  controller: _search,
-                                  textInputAction: TextInputAction.search,
-                                  onChanged: (_) => setState(() {}),
-                                  decoration: const InputDecoration(
-                                    hintText: AppStrings.searchHint,
-                                    prefixIcon: Icon(Icons.search_rounded),
-                                    isDense: true,
+                          AppFadeIn(
+                            child: Row(
+                              children: <Widget>[
+                                Builder(
+                                  builder: (BuildContext context) {
+                                    return SoftIconButton(
+                                      icon: Icons.grid_view_rounded,
+                                      tooltip: AppStrings.menuTooltip,
+                                      onPressed: () =>
+                                          Scaffold.of(context).openDrawer(),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: SearchField(
+                                    controller: _search,
+                                    onChanged: (String value) =>
+                                        setState(() => _query = value),
+                                    onFilter: () =>
+                                        _soon(AppStrings.filterSoon),
+                                  ),
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                SoftIconButton(
+                                  icon: Icons.notifications_none_rounded,
+                                  tooltip: AppStrings.alertsTooltip,
+                                  onPressed: () =>
+                                      _soon(AppStrings.alertsEmpty),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AppFadeIn(
+                            delay: const Duration(milliseconds: 80),
+                            child: PromoCarousel(
+                              onShop: (PromoSlide slide) {
+                                setState(
+                                  () => _selectedCategory = slide.categorySlug,
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AppFadeIn(
+                            delay: const Duration(milliseconds: 140),
+                            child: categories.when(
+                              loading: () => const SizedBox(
+                                height: 82,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
                                   ),
                                 ),
                               ),
-                              IconButton(
-                                tooltip: AppStrings.filterTooltip,
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context)
-                                    ..hideCurrentSnackBar()
-                                    ..showSnackBar(
-                                      const SnackBar(
-                                        content: Text(AppStrings.filterSoon),
-                                      ),
-                                    );
-                                },
-                                icon: const Icon(Icons.tune_rounded),
-                              ),
-                              IconButton(
-                                tooltip: AppStrings.alertsTooltip,
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context)
-                                    ..hideCurrentSnackBar()
-                                    ..showSnackBar(
-                                      const SnackBar(
-                                        content: Text(AppStrings.alertsEmpty),
-                                      ),
-                                    );
-                                },
-                                icon: const Icon(
-                                  Icons.notifications_none_rounded,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          PromoCarousel(
-                            onShop: (PromoSlide slide) {
-                              setState(
-                                () => _selectedCategory = slide.categorySlug,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          categories.when(
-                            loading: () => const SizedBox(
-                              height: 86,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            ),
-                            error: (Object error, StackTrace stackTrace) =>
-                                ErrorView(
-                                  message: userFacingError(error),
-                                  onRetry: () =>
-                                      ref.invalidate(categoriesProvider),
-                                ),
-                            data: (List<Category> items) {
-                              return SizedBox(
-                                height: 82,
-                                child: ListView(
-                                  scrollDirection: Axis.horizontal,
-                                  children: <Widget>[
-                                    CategoryChip.all(
-                                      selected: _selectedCategory == null,
-                                      onTap: () => setState(
-                                        () => _selectedCategory = null,
-                                      ),
-                                    ),
-                                    ...items.map((Category category) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: AppSpacing.sm,
+                              error: (Object error, StackTrace stackTrace) =>
+                                  ErrorView(
+                                    message: userFacingError(error),
+                                    onRetry: () =>
+                                        ref.invalidate(categoriesProvider),
+                                  ),
+                              data: (List<Category> items) {
+                                return SizedBox(
+                                  height: 82,
+                                  child: ListView(
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    children: <Widget>[
+                                      CategoryChip.all(
+                                        selected: _selectedCategory == null,
+                                        onTap: () => setState(
+                                          () => _selectedCategory = null,
                                         ),
-                                        child: CategoryChip.fromSlug(
-                                          slug: category.slug,
-                                          selected:
-                                              _selectedCategory ==
-                                              category.slug,
-                                          onTap: () => setState(
-                                            () => _selectedCategory =
-                                                category.slug,
+                                      ),
+                                      ...items.map((Category category) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: AppSpacing.sm,
                                           ),
-                                        ),
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              );
-                            },
+                                          child: CategoryChip.fromSlug(
+                                            slug: category.slug,
+                                            selected:
+                                                _selectedCategory ==
+                                                category.slug,
+                                            onTap: () => setState(
+                                              () => _selectedCategory =
+                                                  category.slug,
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                          const SizedBox(height: AppSpacing.md),
-                          Row(
-                            children: <Widget>[
-                              const Expanded(
-                                child: SectionHeader(
-                                  title: AppStrings.specialForYou,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  if (_selectedCategory != null) {
-                                    context.push(
-                                      AppRoutes.productList(
-                                        _selectedCategory!,
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  final List<Category>? items = categories
-                                      .asData
-                                      ?.value;
-                                  if (items != null && items.isNotEmpty) {
-                                    context.push(
-                                      AppRoutes.productList(items.first.slug),
-                                    );
-                                  }
-                                },
-                                child: const Text(AppStrings.seeAll),
-                              ),
-                            ],
+                          const SizedBox(height: AppSpacing.lg),
+                          AppFadeIn(
+                            delay: const Duration(milliseconds: 200),
+                            child: SectionHeader(
+                              title: _query.trim().isEmpty
+                                  ? AppStrings.specialForYou
+                                  : '${AppStrings.resultsFor} "${_query.trim()}"',
+                              actionLabel: AppStrings.seeAll,
+                              onAction: () => _openSeeAll(categories),
+                            ),
                           ),
+                          const SizedBox(height: AppSpacing.sm),
                         ],
                       ),
                     ),
                   ),
                   ...products.when(
                     loading: () => <Widget>[
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.page,
-                        ),
-                        sliver: SliverToBoxAdapter(
-                          child: SizedBox(
-                            height: 360,
-                            child: ProductGridSkeleton(columns: columns),
+                      SliverToBoxAdapter(
+                        child: SizedBox(
+                          height: 380,
+                          child: ProductGridSkeleton(
+                            columns: columns,
+                            rows: 2,
+                            physics: const NeverScrollableScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.page,
+                            ),
                           ),
                         ),
                       ),
@@ -265,6 +256,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             child: EmptyView(
                               title: AppStrings.emptyProductsTitle,
                               message: AppStrings.emptyProductsMessage,
+                              icon: Icons.search_off_rounded,
                             ),
                           ),
                         ];
@@ -283,17 +275,20 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   crossAxisCount: columns,
                                   mainAxisSpacing: AppSpacing.md,
                                   crossAxisSpacing: AppSpacing.md,
-                                  childAspectRatio: 0.78,
+                                  childAspectRatio: 0.72,
                                 ),
                             delegate: SliverChildBuilderDelegate((
                               BuildContext context,
                               int index,
                             ) {
                               final Product product = visible[index];
-                              return ProductCard(
-                                product: product,
-                                onTap: () => context.push(
-                                  AppRoutes.productDetails(product.id),
+                              return AppFadeIn.staggered(
+                                index: index,
+                                child: ProductCard(
+                                  product: product,
+                                  onTap: () => context.push(
+                                    AppRoutes.productDetails(product.id),
+                                  ),
                                 ),
                               );
                             }, childCount: visible.length),
