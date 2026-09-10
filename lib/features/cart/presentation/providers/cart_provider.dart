@@ -13,10 +13,7 @@ class CartController extends Notifier<List<CartItem>> {
       (CartItem item) => item.product.id == product.id,
     );
     if (index == -1) {
-      state = <CartItem>[
-        ...state,
-        CartItem(product: product, quantity: count),
-      ];
+      state = <CartItem>[...state, CartItem(product: product, quantity: count)];
       return;
     }
     _replaceAt(
@@ -59,6 +56,15 @@ class CartController extends Notifier<List<CartItem>> {
     state = state
         .where((CartItem item) => item.product.id != productId)
         .toList(growable: false);
+  }
+
+  void clear() => state = const <CartItem>[];
+
+  /// Puts a removed row back where it was, so undo keeps the cart order.
+  void insertAt(int index, CartItem item) {
+    final List<CartItem> next = List<CartItem>.from(state);
+    next.insert(index.clamp(0, next.length), item);
+    state = next;
   }
 
   int get itemCount =>

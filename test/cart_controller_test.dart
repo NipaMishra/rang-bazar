@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:rang_bazaar/features/cart/domain/cart_item.dart';
 import 'package:rang_bazaar/features/cart/presentation/providers/cart_provider.dart';
 import 'package:rang_bazaar/features/catalog/domain/models/product.dart';
 
@@ -69,6 +70,30 @@ void main() {
     expect(container.read(cartProvider).first.quantity, 5);
     cart().setQuantity(1, 0);
     expect(container.read(cartProvider), isEmpty);
+  });
+
+  test('clear empties the cart after checkout', () {
+    cart().add(_product(1));
+    cart().add(_product(2), quantity: 3);
+    cart().clear();
+    expect(container.read(cartProvider), isEmpty);
+    expect(container.read(cartItemCountProvider), 0);
+  });
+
+  test('insertAt restores a removed row in place', () {
+    cart().add(_product(1));
+    cart().add(_product(2));
+    cart().add(_product(3));
+    final CartItem removed = container.read(cartProvider)[1];
+    cart().remove(2);
+    cart().insertAt(1, removed);
+    expect(
+      container
+          .read(cartProvider)
+          .map((CartItem item) => item.product.id)
+          .toList(),
+      <int>[1, 2, 3],
+    );
   });
 
   test('subtotal uses quantity times price', () {
