@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import 'press_scale.dart';
 
 class QuantitySelector extends StatelessWidget {
   const QuantitySelector({
@@ -16,59 +17,106 @@ class QuantitySelector extends StatelessWidget {
   final int quantity;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
+
+  /// Dark filled pill used on the product details action bar.
   final bool inverted;
+
+  /// Small bordered pill used inside cart rows.
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final ThemeData theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
     final Color fill = inverted
         ? (isDark ? AppColors.darkLine : AppColors.navy)
         : compact
         ? Colors.transparent
-        : (isDark ? AppColors.darkLine : const Color(0xFFF3F3F3));
-    final Color ink = inverted
-        ? Colors.white
-        : Theme.of(context).iconTheme.color!;
+        : context.rangColors.imageFill;
+    final Color ink = inverted ? Colors.white : theme.colorScheme.onSurface;
+    final double tap = compact ? 26 : 40;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: fill,
         borderRadius: AppRadius.pillAll,
+        border: compact ? Border.all(color: theme.colorScheme.outline) : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            constraints: compact
-                ? const BoxConstraints.tightFor(width: 28, height: 28)
-                : null,
-            padding: compact ? EdgeInsets.zero : null,
+          _StepButton(
+            icon: Icons.remove_rounded,
+            size: tap,
+            ink: ink,
             tooltip: 'Decrease quantity',
-            onPressed: onDecrement,
-            icon: Icon(Icons.remove_rounded, size: compact ? 16 : 18, color: ink),
+            onTap: onDecrement,
           ),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
-            child: Text(
-              '$quantity',
-              key: ValueKey<int>(quantity),
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: inverted ? Colors.white : null,
+          SizedBox(
+            width: compact ? 20 : 28,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(scale: animation, child: child),
+                );
+              },
+              child: Text(
+                '$quantity',
+                key: ValueKey<int>(quantity),
+                textAlign: TextAlign.center,
+                style:
+                    (compact
+                            ? theme.textTheme.labelLarge
+                            : theme.textTheme.titleMedium)
+                        ?.copyWith(color: ink, fontWeight: FontWeight.w700),
               ),
             ),
           ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            constraints: compact
-                ? const BoxConstraints.tightFor(width: 28, height: 28)
-                : null,
-            padding: compact ? EdgeInsets.zero : null,
+          _StepButton(
+            icon: Icons.add_rounded,
+            size: tap,
+            ink: ink,
             tooltip: 'Increase quantity',
-            onPressed: onIncrement,
-            icon: Icon(Icons.add_rounded, size: compact ? 16 : 18, color: ink),
+            onTap: onIncrement,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StepButton extends StatelessWidget {
+  const _StepButton({
+    required this.icon,
+    required this.size,
+    required this.ink,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final double size;
+  final Color ink;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: PressScale(
+        onTap: onTap,
+        scale: 0.82,
+        semanticLabel: tooltip,
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Center(
+            child: Icon(icon, size: size < 30 ? 15 : 19, color: ink),
+          ),
+        ),
       ),
     );
   }

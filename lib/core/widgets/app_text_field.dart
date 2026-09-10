@@ -37,7 +37,7 @@ class AppTextField extends StatelessWidget {
       autofillHints: autofillHints,
       onFieldSubmitted: onFieldSubmitted,
       decoration: InputDecoration(
-        labelText: label,
+        hintText: label,
         prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
         suffixIcon: onToggleObscure == null
             ? null
