@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
@@ -44,7 +45,7 @@ abstract final class AppTheme {
       brightness: brightness,
       primary: primary,
       onPrimary: onPrimary,
-      secondary: AppColors.pink,
+      secondary: AppColors.accent,
       onSecondary: Colors.white,
       tertiary: AppColors.teal,
       onTertiary: Colors.white,
@@ -58,6 +59,7 @@ abstract final class AppTheme {
     );
 
     final TextTheme textTheme = AppTypography.textTheme(brightness);
+    final bool isLight = brightness == Brightness.light;
 
     return ThemeData(
       useMaterial3: true,
@@ -66,52 +68,79 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: scaffold,
       textTheme: textTheme,
       extensions: <ThemeExtension<dynamic>>[colors],
+      splashFactory: InkSparkle.splashFactory,
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
-        centerTitle: false,
+        centerTitle: true,
         backgroundColor: scaffold,
+        surfaceTintColor: Colors.transparent,
         foregroundColor: onSurface,
-        titleTextStyle: textTheme.titleLarge,
+        toolbarHeight: 64,
+        titleTextStyle: textTheme.headlineSmall?.copyWith(
+          fontSize: 25,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.3,
+          color: onSurface,
+        ),
       ),
       cardTheme: CardThemeData(
         color: surface,
-        elevation: brightness == Brightness.light ? 0 : 0,
+        elevation: 0,
         margin: EdgeInsets.zero,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.card),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: brightness == Brightness.light
-            ? const Color(0xFFF4EEE8)
-            : AppColors.darkSurface,
+        fillColor: isLight ? Colors.white : AppColors.darkSurface,
+        hintStyle: textTheme.bodyMedium?.copyWith(color: muted),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
+          vertical: 14,
         ),
-        border: const OutlineInputBorder(
+        border: OutlineInputBorder(
           borderRadius: AppRadius.field,
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: line),
         ),
-        enabledBorder: const OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.field,
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: line),
         ),
         focusedBorder: const OutlineInputBorder(
           borderRadius: AppRadius.field,
-          borderSide: BorderSide(color: AppColors.coral, width: 1.4),
+          borderSide: BorderSide(color: AppColors.accent, width: 1.4),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: AppRadius.field,
           borderSide: BorderSide(color: scheme.error),
         ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: AppRadius.field,
+          borderSide: BorderSide(color: scheme.error, width: 1.4),
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
-          backgroundColor: AppColors.pink,
+          backgroundColor: AppColors.accent,
           foregroundColor: Colors.white,
           elevation: 0,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.pillAll),
+          textStyle: textTheme.labelLarge,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.accentDeep,
+          textStyle: textTheme.labelLarge,
+          shape: const RoundedRectangleBorder(borderRadius: AppRadius.pillAll),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(AppSpacing.buttonHeight),
+          foregroundColor: onSurface,
+          side: BorderSide(color: line),
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.pillAll),
           textStyle: textTheme.labelLarge,
         ),
@@ -119,11 +148,48 @@ abstract final class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: onSurface,
+        actionTextColor: AppColors.accent,
         contentTextStyle: textTheme.bodyMedium?.copyWith(color: surface),
+        insetPadding: const EdgeInsets.all(AppSpacing.md),
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.field),
       ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.accent,
+        circularTrackColor: Colors.transparent,
+      ),
+      dividerTheme: DividerThemeData(color: line, space: 1, thickness: 1),
       dividerColor: line,
       iconTheme: IconThemeData(color: onSurface, size: AppSpacing.icon),
+      drawerTheme: DrawerThemeData(
+        backgroundColor: scaffold,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.horizontal(
+            right: Radius.circular(AppRadius.lg),
+          ),
+        ),
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: onSurface,
+          borderRadius: AppRadius.tile,
+        ),
+        textStyle: textTheme.bodySmall?.copyWith(color: surface),
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
+        },
+      ),
     );
   }
 }

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 abstract final class AppColors {
   static const Color navy = Color(0xFF1A2744);
   static const Color navyDeep = Color(0xFF0F1624);
-  static const Color ivory = Color(0xFFFFF6F0);
+  static const Color ivory = Color(0xFFFFFFFF);
   static const Color cream = Color(0xFFF5EFE8);
+  static const Color accent = Color(0xFFFF9B2F);
+  static const Color accentDeep = Color(0xFFFF7A1A);
   static const Color pink = Color(0xFFE23D6B);
   static const Color coral = Color(0xFFFF6B4A);
   static const Color marigold = Color(0xFFFFC53D);
@@ -14,7 +16,7 @@ abstract final class AppColors {
 
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightMuted = Color(0xFF5C6578);
-  static const Color lightLine = Color(0xFFE8DFD6);
+  static const Color lightLine = Color(0xFFE8E8E8);
 
   static const Color darkSurface = Color(0xFF1A2436);
   static const Color darkMuted = Color(0xFFB8B3AB);
@@ -23,7 +25,13 @@ abstract final class AppColors {
   static const LinearGradient cta = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: <Color>[pink, coral],
+    colors: <Color>[accent, accentDeep],
+  );
+
+  static const LinearGradient ctaSoft = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: <Color>[Color(0xFFFFB765), accentDeep],
   );
 
   static const LinearGradient fest = LinearGradient(
@@ -41,6 +49,7 @@ class RangBazaarColors extends ThemeExtension<RangBazaarColors> {
     required this.cardShadow,
     required this.imageFill,
     required this.chipFill,
+    required this.accentSoft,
   });
 
   final Color success;
@@ -49,20 +58,25 @@ class RangBazaarColors extends ThemeExtension<RangBazaarColors> {
   final Color imageFill;
   final Color chipFill;
 
+  /// Tinted accent used behind chips, badges and icon buttons.
+  final Color accentSoft;
+
   static const RangBazaarColors light = RangBazaarColors(
     success: Color(0xFF1F8A70),
     warning: AppColors.marigold,
-    cardShadow: Color(0x241A2744),
-    imageFill: Color(0xFFF3EEE8),
-    chipFill: Color(0xFFF7EFE8),
+    cardShadow: Color(0x14000000),
+    imageFill: Color(0xFFF3F3F3),
+    chipFill: Color(0xFFF6F6F6),
+    accentSoft: Color(0xFFFFF1E2),
   );
 
   static const RangBazaarColors dark = RangBazaarColors(
     success: Color(0xFF4ECDC4),
     warning: AppColors.marigold,
-    cardShadow: Color(0x00000000),
+    cardShadow: Color(0x33000000),
     imageFill: Color(0xFF222C40),
     chipFill: Color(0xFF243049),
+    accentSoft: Color(0xFF3A2C1E),
   );
 
   @override
@@ -72,6 +86,7 @@ class RangBazaarColors extends ThemeExtension<RangBazaarColors> {
     Color? cardShadow,
     Color? imageFill,
     Color? chipFill,
+    Color? accentSoft,
   }) {
     return RangBazaarColors(
       success: success ?? this.success,
@@ -79,6 +94,7 @@ class RangBazaarColors extends ThemeExtension<RangBazaarColors> {
       cardShadow: cardShadow ?? this.cardShadow,
       imageFill: imageFill ?? this.imageFill,
       chipFill: chipFill ?? this.chipFill,
+      accentSoft: accentSoft ?? this.accentSoft,
     );
   }
 
@@ -91,6 +107,7 @@ class RangBazaarColors extends ThemeExtension<RangBazaarColors> {
       cardShadow: Color.lerp(cardShadow, other.cardShadow, t)!,
       imageFill: Color.lerp(imageFill, other.imageFill, t)!,
       chipFill: Color.lerp(chipFill, other.chipFill, t)!,
+      accentSoft: Color.lerp(accentSoft, other.accentSoft, t)!,
     );
   }
 }
