@@ -109,10 +109,6 @@ dart format .
 
 Covered: email/password validation, cart add/merge, quantity, removal, totals, INR formatting.
 
-## Screenshots
-
-_Add device captures here after a review run._
-
 ## Assumptions / limitations
 
 - No real authentication or session persistence
