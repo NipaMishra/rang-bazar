@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
+/// Soft brand glows behind full-screen content (splash, login).
 class AmbientBackdrop extends StatelessWidget {
   const AmbientBackdrop({super.key, required this.child});
 
@@ -14,12 +15,19 @@ class AmbientBackdrop extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       children: <Widget>[
         Positioned(
-          left: 0,
-          right: 0,
-          bottom: -80,
+          top: -110,
+          right: -70,
           child: _Glow(
-            color: AppColors.accent.withValues(alpha: isDark ? 0.14 : 0.22),
-            size: 280,
+            color: AppColors.accent.withValues(alpha: isDark ? 0.16 : 0.26),
+            size: 230,
+          ),
+        ),
+        Positioned(
+          left: -90,
+          bottom: -120,
+          child: _Glow(
+            color: AppColors.pink.withValues(alpha: isDark ? 0.14 : 0.16),
+            size: 240,
           ),
         ),
         child,
@@ -37,16 +45,14 @@ class _Glow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: Center(
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: <BoxShadow>[
-              BoxShadow(color: color, blurRadius: 90, spreadRadius: 36),
-            ],
-          ),
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: <BoxShadow>[
+            BoxShadow(color: color, blurRadius: 90, spreadRadius: 40),
+          ],
         ),
       ),
     );

@@ -60,21 +60,31 @@ class _ShimmerBoxState extends State<ShimmerBox>
 }
 
 class ProductGridSkeleton extends StatelessWidget {
-  const ProductGridSkeleton({super.key, required this.columns});
+  const ProductGridSkeleton({
+    super.key,
+    required this.columns,
+    this.padding = const EdgeInsets.all(AppSpacing.page),
+    this.rows = 3,
+    this.physics,
+  });
 
   final int columns;
+  final EdgeInsets padding;
+  final int rows;
+  final ScrollPhysics? physics;
 
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      padding: const EdgeInsets.all(AppSpacing.page),
+      padding: padding,
+      physics: physics ?? const AlwaysScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: columns,
         mainAxisSpacing: AppSpacing.md,
         crossAxisSpacing: AppSpacing.md,
-        childAspectRatio: 0.68,
+        childAspectRatio: 0.72,
       ),
-      itemCount: columns * 3,
+      itemCount: columns * rows,
       itemBuilder: (BuildContext context, int index) {
         return const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
